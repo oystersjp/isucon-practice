@@ -1,7 +1,10 @@
+# build
 execute "build application" do
   command "make -C /opt/isucon3-mod/app build GO=/usr/local/go/bin/go"
 end
 
+
+# supervisor
 execute "install epel repository" do
   command "amazon-linux-extras install -y epel"
   not_if "test -f /etc/yum.repos.d/epel.repo"

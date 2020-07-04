@@ -3,7 +3,7 @@ GO=go
 .PHONY: build setup run
 
 build: setup
-	cd ./src && ${GO} build -o ./src/app app.go
+	cd ./src && ${GO} build -o ./app app.go
 
 setup:
 	${GO} get github.com/go-sql-driver/mysql
@@ -12,4 +12,4 @@ setup:
 	${GO} get github.com/bradfitz/gomemcache/memcache
 
 run:
-	cd ./src && ./src/app
+	cd ./src && ./app
