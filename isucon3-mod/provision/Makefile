@@ -9,7 +9,7 @@ test: build
 		--volume $(PWD)/../:/opt/isucon3-mod ${IMAGE_NAME} /sbin/init
 	@echo "awaiting for initializing..." && sleep 3
 	docker exec -it $$(docker ps -q --filter "ancestor=${IMAGE_NAME}") make -C /opt/isucon3-mod/provision run/locally
-	$(MAKE) clean
+	#$(MAKE) clean
 
 build:
 	docker build --tag ${IMAGE_NAME} .
