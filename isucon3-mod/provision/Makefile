@@ -20,3 +20,9 @@ clean:
 run/locally:
 	itamae local roles/app.rb
 	bash
+
+run/ssh: host=
+run/ssh: user=ec2-user
+run/ssh: key=
+run/ssh:
+	itamae ssh --host ${host} --user ${user} --key ${key} --sudo roles/app.rb
