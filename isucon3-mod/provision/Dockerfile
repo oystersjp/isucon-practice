@@ -2,7 +2,7 @@ FROM amazonlinux:2
 
 # Amazon Linux2 AMIとの乖離を埋める
 RUN yum update -y && \
-    yum install -y sudo make vim shadow-utils systemd openssh-clients openssh-server
+    yum install -y sudo make vim shadow-utils systemd openssh-clients openssh-server yum-utils
 RUN systemctl enable sshd
 
 # Itamae

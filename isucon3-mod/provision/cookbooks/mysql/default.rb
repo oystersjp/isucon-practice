@@ -4,9 +4,16 @@ execute "add yum repository for MySQL" do
   not_if "test -f /etc/yum.repos.d/mysql-community.repo"
 end
 
+execute "disable mysql80 repository" do
+  command "yum-config-manager --disable mysql80-community"
+end
+
+execute "enable mysql57 repository" do
+  command "yum-config-manager --enable mysql57-community"
+end
+
 package "mysql-community-server" do
   action :install
-  options "--disablerepo=mysql80-community --enablerepo mysql57-community"
   not_if "mysql --version"
 end
 
