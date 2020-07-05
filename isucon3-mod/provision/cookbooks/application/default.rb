@@ -1,3 +1,12 @@
+# placement source code
+remote_directory "/opt/isucon3-mod" do
+  action :create
+  source "../../../"
+  owner "isucon"
+  group "isucon"
+end
+
+
 # build
 execute "build application" do
   command "make -C /opt/isucon3-mod/app build GO=/usr/local/go/bin/go"
@@ -19,6 +28,8 @@ remote_file "/etc/supervisord.d/app.ini" do
   source :auto
 end
 
+
+# start applciation
 service "supervisord" do
   action [:enable, :start]
 end

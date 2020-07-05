@@ -5,11 +5,9 @@ IMAGE_NAME = isucon3-base
 # see: https://qiita.com/mikene_koko/items/4c71c969f55e3fe24190
 test: build
 	docker run --rm -it --detach --privileged \
-	    --publish 80 \
-		--volume $(PWD)/../:/opt/isucon3-mod ${IMAGE_NAME} /sbin/init
+	    --publish 80 --publish 1022:22 ${IMAGE_NAME} /sbin/init
 	@echo "awaiting for initializing..." && sleep 3
-	docker exec -it $$(docker ps -q --filter "ancestor=${IMAGE_NAME}") make -C /opt/isucon3-mod/provision run/locally
-	#$(MAKE) clean
+	$(MAKE) apply host=localhost user=root port=1022 key=test/ssh.pem
 
 build:
 	docker build --tag ${IMAGE_NAME} .
@@ -17,12 +15,9 @@ build:
 clean:
 	-docker kill $$(docker ps -q --filter "ancestor=${IMAGE_NAME}")
 
-run/locally:
-	itamae local roles/app.rb
-	bash
-
-run/ssh: host=
-run/ssh: user=ec2-user
-run/ssh: key=
-run/ssh:
-	itamae ssh --host ${host} --user ${user} --key ${key} --sudo roles/app.rb
+apply: host=
+apply: user=ec2-user
+apply: port=22
+apply: key=
+apply:
+	itamae ssh --host ${host} --user ${user} --port ${port} --key ${key} --sudo roles/app.rb
