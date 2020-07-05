@@ -16,7 +16,7 @@ end
 file "/etc/profile" do
   action :edit
   block do |content|
-    content.concat("\n", "export PATH=$PATH:/usr/local/go/bin")
+    content.concat("\n").concat("export PATH=$PATH:/usr/local/go/bin")
   end
   not_if "grep \"/usr/local/go/bin\" /etc/profile"
 end
