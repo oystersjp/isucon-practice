@@ -21,18 +21,8 @@ remote_file "/home/isucon/.ssh/authorized_keys" do
   group "isucon"
 end
 
-
 # Nginx
-execute "install nginx" do
-  command "amazon-linux-extras install -y nginx1"
-  not_if "test -d /etc/nginx"
-end
-service "nginx" do
-  action [:enable, :start]
-end
-
-# TODO: nginx設定ファイルを設置
-
+include_recipe "../cookbooks/nginx"
 
 # MySQL
 execute "add yum repository for MySQL" do
