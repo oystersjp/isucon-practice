@@ -1,7 +1,7 @@
 package main
 
 import (
-	bench "./isucon2013"
+	bench "github.com/oystersjp/isucon-practice/isucon3-mod/bench/isucon2013"
 	"encoding/json"
 	"flag"
 	"fmt"
