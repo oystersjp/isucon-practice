@@ -12,3 +12,6 @@ include_recipe "../cookbooks/golang"
 
 # Application
 include_recipe "../cookbooks/application"
+
+# bench
+include_recipe "../cookbooks/bench"
