@@ -9,9 +9,6 @@ down:
 logs:
 	docker-compose logs -f
 
-restart:
-	nginx -s reload
-
 bench: bin=/opt/isucon3-mod/bench/bench
 bench: work_load=1
 bench: init=./init.sh
