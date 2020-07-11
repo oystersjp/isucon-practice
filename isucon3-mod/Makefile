@@ -12,11 +12,11 @@ logs:
 restart:
 	nginx -s reload
 
-BENCH=/home/isucon/qualifier_bench/qualifier_bench
-WORK_LOAD=1
-INIT=./init.sh
+bench: bin=/opt/isucon3-mod/bench/bench
+bench: work_load=1
+bench: init=./init.sh
 bench:
-	$(BENCH) benchmark --workload $(WORK_LOAD) --init $(INIT)
+	sudo ${bin} benchmark --workload ${work_load} --init ${init}
 
 SLOW_LOG=/tmp/mysql-slow.log
 restart:
