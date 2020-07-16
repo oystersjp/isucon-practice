@@ -22,6 +22,7 @@ end
 remote_file "/etc/my.cnf" do
   action :create
   source :auto
+  mode "0644"
 end
 
 
