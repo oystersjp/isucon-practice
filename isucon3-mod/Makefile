@@ -1,4 +1,4 @@
-.PHONY: up down logs bench restart
+.PHONY: up down logs bench restart kataribe
 
 up:
 	docker-compose up -d --build
@@ -19,3 +19,7 @@ restart:
 	$(MAKE) -C app build && sudo supervisorctl restart isucon-app
 	sudo bash -c "echo '' > /var/log/nginx/access.log && echo '' > /var/log/nginx/error.log" && sudo systemctl restart nginx.service
 	sudo bash -c "echo '' > $(SLOW_LOG)" && sudo systemctl restart mysqld.service
+
+kataribe:
+	cat /var/log/nginx/access.log | kataribe
+
