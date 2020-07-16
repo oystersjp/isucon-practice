@@ -9,11 +9,10 @@ down:
 logs:
 	docker-compose logs -f
 
-bench: bin=/opt/isucon3-mod/bench/bench
 bench: work_load=1
 bench: init=./init.sh
 bench:
-	sudo ${bin} benchmark --workload ${work_load} --init ${init}
+	sudo /opt/isucon3-mod/bench/bench benchmark --workload ${work_load} --init ${init}
 
 SLOW_LOG=/tmp/mysql-slow.log
 restart:
