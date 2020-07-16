@@ -18,3 +18,6 @@ include_recipe "../cookbooks/bench"
 
 # netdata
 include_recipe "../cookbooks/netdata"
+
+# kataribe
+include_recipe "../cookbooks/kataribe"
