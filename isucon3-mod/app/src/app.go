@@ -20,6 +20,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -110,10 +111,14 @@ var (
 )
 
 func main() {
-	app, err := newrelic.NewApplication(newrelic.NewConfig(
-			"isucon3-mod",
-			os.Getenv("NEWRELIC_LICENSE"),
-		))
+	conf := newrelic.NewConfig(
+		"isucon3-mod",
+		os.Getenv("NEWRELIC_LICENSE"),
+	)
+	conf.TransactionTracer.StackTraceThreshold = 100 * time.Millisecond
+	conf.TransactionTracer.SegmentThreshold = 100 * time.Millisecond
+
+	app, err := newrelic.NewApplication(conf)
 	if err != nil {
 		panic(err)
 	}
