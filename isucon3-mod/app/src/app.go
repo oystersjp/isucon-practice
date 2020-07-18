@@ -123,6 +123,7 @@ func main() {
 	}
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.SetBlockProfileRate(1)
 
 	env := os.Getenv("ISUCON_ENV")
 	if env == "" {
@@ -155,7 +156,6 @@ func main() {
 	r.HandleFunc(newrelic.WrapHandleFunc(app, "/memo/{memo_id}", memoHandler)).Methods("GET", "HEAD")
 	r.HandleFunc(newrelic.WrapHandleFunc(app, "/memo", memoPostHandler)).Methods("POST")
 	r.HandleFunc(newrelic.WrapHandleFunc(app, "/recent/{page:[0-9]+}", recentHandler))
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(listenAddr, nil))
 }
