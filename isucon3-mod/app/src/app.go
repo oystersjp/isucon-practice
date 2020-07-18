@@ -480,11 +480,14 @@ func mypageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func memoHandler(w http.ResponseWriter, r *http.Request) {
+	t := newrelic.StartSegment(newrelic.FromContext(r.Context()), "loadSession")
 	session, err := loadSession(w, r)
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	t.End()
+
 	prepareHandler(w, r)
 	vars := mux.Vars(r)
 	memoId := vars["memo_id"]
@@ -494,11 +497,14 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 	user := getUser(w, r, dbConn, session)
 
+	t = newrelic.StartSegment(newrelic.FromContext(r.Context()), "memo query 1")
 	rows, err := dbConn.Query("SELECT id, user, content, is_private, created_at, updated_at FROM memos WHERE id=?", memoId)
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	t.End()
+
 	memo := &Memo{}
 	if rows.Next() {
 		rows.Scan(&memo.Id, &memo.User, &memo.Content, &memo.IsPrivate, &memo.CreatedAt, &memo.UpdatedAt)
@@ -513,11 +519,14 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	t = newrelic.StartSegment(newrelic.FromContext(r.Context()), "memo query 2")
 	rows, err = dbConn.Query("SELECT username FROM users WHERE id=?", memo.User)
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	t.End()
 	if rows.Next() {
 		rows.Scan(&memo.Username)
 		rows.Close()
@@ -529,11 +538,13 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		cond = "AND is_private=0"
 	}
+	t = newrelic.StartSegment(newrelic.FromContext(r.Context()), "memo query 3")
 	rows, err = dbConn.Query("SELECT id, content, is_private, created_at, updated_at FROM memos WHERE user=? "+cond+" ORDER BY created_at", memo.User)
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	t.End()
 	memos := make(Memos, 0)
 	for rows.Next() {
 		m := Memo{}
@@ -561,9 +572,11 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 		Newer:   newer,
 		Session: session,
 	}
+	t = newrelic.StartSegment(newrelic.FromContext(r.Context()), "ExecuteTemplate")
 	if err = tmpl.ExecuteTemplate(w, "memo", v); err != nil {
 		serverError(w, err)
 	}
+	t.End()
 }
 
 func memoPostHandler(w http.ResponseWriter, r *http.Request) {
