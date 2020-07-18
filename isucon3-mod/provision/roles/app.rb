@@ -13,5 +13,11 @@ include_recipe "../cookbooks/golang"
 # Application
 include_recipe "../cookbooks/application"
 
-# bench
+# Benchmarker
 include_recipe "../cookbooks/bench"
+
+# netdata
+include_recipe "../cookbooks/netdata"
+
+# kataribe
+include_recipe "../cookbooks/kataribe"

@@ -1,6 +1,7 @@
 # golang's dependencies
 ["tar", "git"].each do |p| package p end
 
+
 # install
 # NOTE: amazon-linux-extrasで1.14が入らないので手動でバイナリ取ってくる
 execute "install golang" do
@@ -12,11 +13,10 @@ CMD
   not_if "test -f /usr/local/go/bin/go"
 end
 
-# add path to global
-file "/etc/profile" do
-  action :edit
-  block do |content|
-    content.concat("\n").concat("export PATH=$PATH:/usr/local/go/bin")
-  end
-  not_if "grep \"/usr/local/go/bin\" /etc/profile"
+
+# path
+link "/usr/local/bin/go" do
+  action :create
+  to "/usr/local/go/bin/go"
+  force true
 end

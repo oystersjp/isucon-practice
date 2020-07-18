@@ -17,6 +17,15 @@ package "mysql-community-server" do
   not_if "mysql --version"
 end
 
+
+# config file
+remote_file "/etc/my.cnf" do
+  action :create
+  source :auto
+  mode "0644"
+end
+
+
 # start
 service "mysqld" do
   action [:enable, :start]
