@@ -142,7 +142,6 @@ func main() {
 	r.HandleFunc("/memo/{memo_id}", memoHandler).Methods("GET", "HEAD")
 	r.HandleFunc("/memo", memoPostHandler).Methods("POST")
 	r.HandleFunc("/recent/{page:[0-9]+}", recentHandler)
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(listenAddr, nil))
 }
