@@ -1,4 +1,4 @@
-.PHONY: up down logs bench restart kataribe
+.PHONY: up down logs bench gogo kataribe
 
 up:
 	docker-compose up -d --build
@@ -14,12 +14,19 @@ bench: init=./init.sh
 bench:
 	sudo /opt/isucon3-mod/bench/bench benchmark --workload ${workload} --init ${init}
 
-SLOW_LOG=/var/lib/mysql/mysql-slow.log
-restart:
-	$(MAKE) -C app build && sudo supervisorctl restart isucon-app
-	sudo bash -c "echo '' > /var/log/nginx/access.log && echo '' > /var/log/nginx/error.log" && sudo systemctl restart nginx.service
-	sudo bash -c "echo '' > $(SLOW_LOG)" && sudo systemctl restart mysqld.service
+gogo:
+	sudo systemctl stop nginx
+	sudo supervisorctl stop isucon-app
+	sudo systemctl stop mysqld
+	sudo truncate --size 0 /var/lib/mysql/mysql-slow.log
+	sudo truncate --size 0 /var/log/nginx/access.log
+	$(MAKE) -C app build
+	sudo supervisorctl start isucon-app
+	sudo systemctl start mysqld
+	sudo systemctl start nginx
+	$(MAKE) bench
+	$(MAKE) kataribe
 
 kataribe:
-	cat /var/log/nginx/access.log | kataribe
+	sudo cat /var/log/nginx/access.log | kataribe
 
