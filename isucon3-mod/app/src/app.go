@@ -9,6 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
+	"github.com/newrelic/go-agent"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -19,7 +20,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	 _ "net/http/pprof"
 )
 
 const (
@@ -110,6 +110,18 @@ var (
 )
 
 func main() {
+	conf := newrelic.NewConfig(
+		"isucon3-mod",
+		os.Getenv("NEWRELIC_LICENSE"),
+	)
+	conf.DistributedTracer.Enabled = true
+	conf.CrossApplicationTracer.Enabled = false
+
+	app, err := newrelic.NewApplication(conf)
+	if err != nil {
+		panic(err)
+	}
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	runtime.SetBlockProfileRate(1)
 
@@ -136,14 +148,14 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", topHandler)
-	r.HandleFunc("/signin", signinHandler).Methods("GET", "HEAD")
-	r.HandleFunc("/signin", signinPostHandler).Methods("POST")
-	r.HandleFunc("/signout", signoutHandler)
-	r.HandleFunc("/mypage", mypageHandler)
-	r.HandleFunc("/memo/{memo_id}", memoHandler).Methods("GET", "HEAD")
-	r.HandleFunc("/memo", memoPostHandler).Methods("POST")
-	r.HandleFunc("/recent/{page:[0-9]+}", recentHandler)
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/", topHandler))
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/signin", signinHandler)).Methods("GET", "HEAD")
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/signin", signinPostHandler)).Methods("POST")
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/signout", signoutHandler))
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/mypage", mypageHandler))
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/memo/{memo_id}", memoHandler)).Methods("GET", "HEAD")
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/memo", memoPostHandler)).Methods("POST")
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/recent/{page:[0-9]+}", recentHandler))
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(listenAddr, nil))
 }
@@ -468,11 +480,15 @@ func mypageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func memoHandler(w http.ResponseWriter, r *http.Request) {
+	tx := newrelic.FromContext(r.Context())
+	t := newrelic.StartSegment(tx, "loadSession")
 	session, err := loadSession(w, r)
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	t.End()
+
 	prepareHandler(w, r)
 	vars := mux.Vars(r)
 	memoId := vars["memo_id"]
@@ -482,11 +498,14 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 	user := getUser(w, r, dbConn, session)
 
+	t = newrelic.StartSegment(tx, "memo query 1")
 	rows, err := dbConn.Query("SELECT id, user, content, is_private, created_at, updated_at FROM memos WHERE id=?", memoId)
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	t.End()
+
 	memo := &Memo{}
 	if rows.Next() {
 		rows.Scan(&memo.Id, &memo.User, &memo.Content, &memo.IsPrivate, &memo.CreatedAt, &memo.UpdatedAt)
@@ -501,11 +520,14 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	t = newrelic.StartSegment(tx, "memo query 2")
 	rows, err = dbConn.Query("SELECT username FROM users WHERE id=?", memo.User)
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	t.End()
 	if rows.Next() {
 		rows.Scan(&memo.Username)
 		rows.Close()
@@ -517,11 +539,13 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		cond = "AND is_private=0"
 	}
+	t = newrelic.StartSegment(tx, "memo query 3")
 	rows, err = dbConn.Query("SELECT id, content, is_private, created_at, updated_at FROM memos WHERE user=? "+cond+" ORDER BY created_at", memo.User)
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	t.End()
 	memos := make(Memos, 0)
 	for rows.Next() {
 		m := Memo{}
@@ -549,9 +573,11 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 		Newer:   newer,
 		Session: session,
 	}
+	t = newrelic.StartSegment(tx, "ExecuteTemplate")
 	if err = tmpl.ExecuteTemplate(w, "memo", v); err != nil {
 		serverError(w, err)
 	}
+	t.End()
 }
 
 func memoPostHandler(w http.ResponseWriter, r *http.Request) {
