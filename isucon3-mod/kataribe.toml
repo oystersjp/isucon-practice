@@ -55,6 +55,10 @@ regexp = '^(GET|HEAD) /memo/[0-9]+\b'
 name = "get memo"
 
 [[bundle]]
+regexp = '^(GET|HEAD) /recent/[0-9]+\b'
+name = "get recent"
+
+[[bundle]]
 regexp = '^(GET|HEAD) /stylesheets/'
 name = "stylesheets"
 
