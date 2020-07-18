@@ -9,6 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
+	"github.com/newrelic/go-agent"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -19,7 +20,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	 _ "net/http/pprof"
 )
 
 const (
@@ -110,6 +110,14 @@ var (
 )
 
 func main() {
+	app, err := newrelic.NewApplication(newrelic.NewConfig(
+			"isucon3-mod",
+			os.Getenv("NEWRELIC_LICENSE"),
+		))
+	if err != nil {
+		panic(err)
+	}
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	env := os.Getenv("ISUCON_ENV")
@@ -135,14 +143,14 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", topHandler)
-	r.HandleFunc("/signin", signinHandler).Methods("GET", "HEAD")
-	r.HandleFunc("/signin", signinPostHandler).Methods("POST")
-	r.HandleFunc("/signout", signoutHandler)
-	r.HandleFunc("/mypage", mypageHandler)
-	r.HandleFunc("/memo/{memo_id}", memoHandler).Methods("GET", "HEAD")
-	r.HandleFunc("/memo", memoPostHandler).Methods("POST")
-	r.HandleFunc("/recent/{page:[0-9]+}", recentHandler)
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/", topHandler))
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/signin", signinHandler)).Methods("GET", "HEAD")
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/signin", signinPostHandler)).Methods("POST")
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/signout", signoutHandler))
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/mypage", mypageHandler))
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/memo/{memo_id}", memoHandler)).Methods("GET", "HEAD")
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/memo", memoPostHandler)).Methods("POST")
+	r.HandleFunc(newrelic.WrapHandleFunc(app, "/recent/{page:[0-9]+}", recentHandler))
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(listenAddr, nil))
