@@ -12,7 +12,12 @@ ISUCON3をベースにしたISUCON課題アプリです
 * Memcache: 使わない
 * アプリケーション
     * Golangのみ
-
+        * Go mod対応済み
+* プロファイラ
+    * kataribe
+    * netdata
+    * slow query
+* 便利なMakefileを用意
 
 ## 動かし方
 TODO: 気が向いたら書く
