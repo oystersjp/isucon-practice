@@ -115,6 +115,7 @@ func main() {
 		"isucon3-mod",
 		os.Getenv("NEWRELIC_LICENSE"),
 	)
+	conf.DistributedTracer.Enabled = true
 	conf.TransactionTracer.StackTraceThreshold = 100 * time.Millisecond
 	conf.TransactionTracer.SegmentThreshold = 100 * time.Millisecond
 
