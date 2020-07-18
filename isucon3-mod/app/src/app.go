@@ -480,7 +480,8 @@ func mypageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func memoHandler(w http.ResponseWriter, r *http.Request) {
-	t := newrelic.StartSegment(newrelic.FromContext(r.Context()), "loadSession")
+	tx := newrelic.FromContext(r.Context())
+	t := newrelic.StartSegment(tx, "loadSession")
 	session, err := loadSession(w, r)
 	if err != nil {
 		serverError(w, err)
@@ -497,7 +498,7 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 	user := getUser(w, r, dbConn, session)
 
-	t = newrelic.StartSegment(newrelic.FromContext(r.Context()), "memo query 1")
+	t = newrelic.StartSegment(tx, "memo query 1")
 	rows, err := dbConn.Query("SELECT id, user, content, is_private, created_at, updated_at FROM memos WHERE id=?", memoId)
 	if err != nil {
 		serverError(w, err)
@@ -520,7 +521,7 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	t = newrelic.StartSegment(newrelic.FromContext(r.Context()), "memo query 2")
+	t = newrelic.StartSegment(tx, "memo query 2")
 	rows, err = dbConn.Query("SELECT username FROM users WHERE id=?", memo.User)
 	if err != nil {
 		serverError(w, err)
@@ -538,7 +539,7 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		cond = "AND is_private=0"
 	}
-	t = newrelic.StartSegment(newrelic.FromContext(r.Context()), "memo query 3")
+	t = newrelic.StartSegment(tx, "memo query 3")
 	rows, err = dbConn.Query("SELECT id, content, is_private, created_at, updated_at FROM memos WHERE user=? "+cond+" ORDER BY created_at", memo.User)
 	if err != nil {
 		serverError(w, err)
@@ -572,7 +573,7 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 		Newer:   newer,
 		Session: session,
 	}
-	t = newrelic.StartSegment(newrelic.FromContext(r.Context()), "ExecuteTemplate")
+	t = newrelic.StartSegment(tx, "ExecuteTemplate")
 	if err = tmpl.ExecuteTemplate(w, "memo", v); err != nil {
 		serverError(w, err)
 	}
