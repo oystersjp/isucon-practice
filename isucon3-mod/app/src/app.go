@@ -19,6 +19,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	 _ "net/http/pprof"
 )
 
 const (
