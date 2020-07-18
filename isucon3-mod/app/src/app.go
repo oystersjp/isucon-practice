@@ -111,6 +111,7 @@ var (
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.SetBlockProfileRate(1)
 
 	env := os.Getenv("ISUCON_ENV")
 	if env == "" {
