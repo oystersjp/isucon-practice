@@ -21,3 +21,6 @@ apply: port=22
 apply: key=
 apply:
 	itamae ssh --host ${host} --user ${user} --port ${port} --key ${key} --sudo roles/app.rb
+	scp -i ${key} ../init.sql.gz ${user}@${host}:/tmp/init.sql.gz
+	ssh -i ${key} ${user}@${host} 'echo "drop database if exists isucon; create database isucon;" | sudo mysql -u root -r'
+	ssh -i ${key} ${user}@${host} 'cd /tmp && sudo gzip -df init.sql.gz && cat init.sql | sudo mysql -u root -D isucon -r'

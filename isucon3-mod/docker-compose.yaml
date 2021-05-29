@@ -31,4 +31,4 @@ services:
             MYSQL_USER: "isucon"
             MYSQL_PASSWORD: "isucon"
         volumes:
-          - "$PWD/docker-files/init.sql.gz:/docker-entrypoint-initdb.d/init.sql.gz"
+          - "$PWD/init.sql.gz:/docker-entrypoint-initdb.d/init.sql.gz"

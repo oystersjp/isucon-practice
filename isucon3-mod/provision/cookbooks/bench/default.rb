@@ -1,6 +1,16 @@
+remote_directory "/home/isucon/qualifier_bench" do
+  action :create
+  source "files/home/isucon/qualifier_bench"
+end
+
 remote_directory "/opt/isucon" do
   action :create
   source "files/opt/isucon"
+end
+
+directory "/opt/isucon/bin" do
+  action :create
+  mode "0777"
 end
 
 # pigz
