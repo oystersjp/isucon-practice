@@ -8,8 +8,8 @@ execute "disable mysql80 repository" do
   command "yum-config-manager --disable mysql80-community"
 end
 
-execute "enable mysql57 repository" do
-  command "yum-config-manager --enable mysql57-community"
+execute "enable mysql56 repository" do
+  command "yum-config-manager --enable mysql56-community"
 end
 
 package "mysql-community-server" do
