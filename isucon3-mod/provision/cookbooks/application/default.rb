@@ -6,10 +6,18 @@ remote_directory "/opt/isucon3-mod" do
   group "isucon"
 end
 
+directory "/opt/isucon3-mod/app" do
+  mode "0777"
+end
+directory "/opt/isucon3-mod/app/src" do
+  mode "0777"
+end
+
 
 # build
 execute "build application" do
-  command "make -C /opt/isucon3-mod/app build GO=/usr/local/go/bin/go"
+  command "make build GO=/usr/local/go/bin/go"
+  cwd "/opt/isucon3-mod/app"
 end
 
 
