@@ -1,5 +1,35 @@
-.PHONY: up down logs bench restart kataribe
+.PHONY: gogo services/stop logs/truncate app/build services/start bench kataribe
+gogo: services/stop logs/truncate app/build services/start bench
 
+services/stop:
+	sudo systemctl stop nginx
+	sudo supervisorctl stop isucon-app
+	sudo systemctl stop mysqld
+
+logs/truncate:
+	sudo truncate --size 0 /var/log/nginx/access.log
+	sudo truncate --size 0 /var/log/nginx/error.log
+	sudo truncate --size 0 /var/lib/mysql/mysql-slow.log
+
+app/build:
+	cd app && make build
+
+services/start:
+	sudo systemctl start mysqld
+	sudo supervisorctl start isucon-app
+	sudo systemctl start nginx
+
+bench: workload=1
+bench: init=/home/isucon/qualifier_bench/init.sh
+bench:
+	sudo /home/isucon/qualifier_bench/bin/bench benchmark --workload ${workload} --init ${init}
+
+kataribe:
+	sudo cat /var/log/nginx/access.log | kataribe
+
+
+# 開発用
+.PHONY: up down logs
 up:
 	docker-compose up -d --build
 
@@ -8,18 +38,3 @@ down:
 
 logs:
 	docker-compose logs -f
-
-bench: workload=1
-bench: init=/home/isucon/qualifier_bench/init.sh
-bench:
-	sudo /home/isucon/qualifier_bench/bin/bench benchmark --workload ${workload} --init ${init}
-
-SLOW_LOG=/var/lib/mysql/mysql-slow.log
-restart:
-	$(MAKE) -C app build && sudo supervisorctl restart isucon-app
-	sudo bash -c "echo '' > /var/log/nginx/access.log && echo '' > /var/log/nginx/error.log" && sudo systemctl restart nginx.service
-	sudo bash -c "echo '' > $(SLOW_LOG)" && sudo systemctl restart mysqld.service
-
-kataribe:
-	cat /var/log/nginx/access.log | kataribe
-
